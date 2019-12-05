@@ -9,6 +9,7 @@ This is a keras implementation of YOLOv2 (YOLO9000). Original Paper : [YOLO9000]
 * scipy
 * h5py
 * matplotlib
+* 
 
 #### Test
 
@@ -17,6 +18,17 @@ To run the model download the weights from this [link](https://drive.google.com/
 Put your test image insied images folder and run the model.
 
 (Some of the functions of `utils.py` has been used from [YAD2K](https://github.com/allanzelener/YAD2K))
+
+#### Camera test
+You need you install OpenCV 
+```
+pip install opencv-python
+```
+Run the code 
+```
+python create_model.py
+```
+
 
 #### Results
 
