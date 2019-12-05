@@ -2,11 +2,12 @@ import colorsys
 import imghdr
 import os
 import os
+import cv2
 import random
 import sys
 import numpy as np
 import tensorflow as tf
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -108,9 +109,8 @@ def yolo_head(feats, anchors, num_classes):
 
 
 def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
-    
-    font = ImageFont.truetype(font='font/Quicksand-BoldItalic.otf',size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-    thickness = (image.size[0] + image.size[1]) // 300
+    # font = ImageFont.truetype(font='font/Quicksand-BoldItalic.otf',size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
+    # thickness = (image.size[0] + image.size[1]) // 300
 
     for i, c in reversed(list(enumerate(out_classes))):
         predicted_class = class_names[c]
@@ -118,25 +118,49 @@ def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
         score = out_scores[i]
 
         label = '{} {:.2f}'.format(predicted_class, score)
-
-        draw = ImageDraw.Draw(image)
-        label_size = draw.textsize(label, font)
+        # if predicted_class != "person" and score >0.75: 
+        #     return
+        # # draw = ImageDraw.Draw(image)
+        # label_size = draw.textsize(label, font)
 
         top, left, bottom, right = box
         top = max(0, np.floor(top + 0.5).astype('int32'))
         left = max(0, np.floor(left + 0.5).astype('int32'))
-        bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
-        right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
+        bottom = min(image.shape[1], np.floor(bottom + 0.5).astype('int32'))
+        right = min(image.shape[0], np.floor(right + 0.5).astype('int32'))
         print(label, (left, top), (right, bottom))
 
-        if top - label_size[1] >= 0:
-            text_origin = np.array([left, top - label_size[1]])
-        else:
-            text_origin = np.array([left, top + 1])
+        # if top - label_size[1] >= 0:
+        #     text_origin = np.array([left, top - label_size[1]])
+        # else:
+        #     text_origin = np.array([left, top + 1])
 
         # My kingdom for a good redistributable image drawing library.
-        for i in range(thickness):
-            draw.rectangle([left + i, top + i, right - i, bottom - i], outline=colors[c])
-        draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=colors[c])
-        draw.text(text_origin, label, fill=(0, 0, 0), font=font)
-        del draw
+        # for i in range(thickness):
+        #     draw.rectangle([left + i, top + i, right - i, bottom - i], outline=colors[c])
+        # draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=colors[c])
+        # draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+        # del draw
+
+        image=cv2.rectangle(image,(left,top),(right,bottom),colors[c],3)
+            # font 
+        font = cv2.FONT_HERSHEY_SIMPLEX 
+
+        # org 
+        org = (left,top-10 ) 
+
+        # fontScale 
+        fontScale = 1
+
+        # Blue color in BGR 
+        color = colors[c]
+
+        # Line thickness of 2 px 
+        thickness = 2
+
+        # Using cv2.putText() method 
+        image = cv2.putText(image, predicted_class, org, font,  
+                        fontScale, color, thickness, cv2.LINE_AA) 
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        # image=cv2.text(image,'OpenCV',(left,top-25), font,1 ,(,2,cv2.LINE_AA)
+    return image
